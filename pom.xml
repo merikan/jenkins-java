@@ -17,6 +17,23 @@
   <properties>
     <java.version>1.8</java.version>
     <testcontainers.version>1.16.3</testcontainers.version>
+    <!--    Plugins -->
+    <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
+    <docker-maven-plugin.version>0.40.1</docker-maven-plugin.version>
+    <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <maven-deploy-plugin.version>3.0.0-M2</maven-deploy-plugin.version>
+    <maven-enforcer-plugin.version>3.1.0</maven-enforcer-plugin.version>
+    <maven-failsafe-plugin.version>3.0.0-M7</maven-failsafe-plugin.version>
+    <maven-help-plugin.version>3.2.0</maven-help-plugin.version>
+    <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
+    <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <maven-site-plugin.version>4.0.0-M2</maven-site-plugin.version>
+    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
+    <maven-wrapper-plugin.version>3.1.1</maven-wrapper-plugin.version>
+    <versions-maven-plugin.version>2.11.0</versions-maven-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -116,18 +133,8 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <configuration>
-          <profiles>
-            <profile>development</profile>
-          </profiles>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
         <configuration>
           <classesDirectory>${project.build.outputDirectory}</classesDirectory>
         </configuration>
@@ -145,14 +152,131 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
         <configuration>
           <argLine>
             -Djunit.jupiter.displayname.generator.default=com.merikan.testcontainers.todo.test.ReplaceCamelCaseAndUnderScores
           </argLine>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-rules</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <rules>
+            <requireMavenVersion>
+              <message>You are running an older version of Maven. You should run the maven wrapper in the top project
+                (./mvnw).
+              </message>
+              <version>[${maven.version},)</version>
+            </requireMavenVersion>
+            <requireJavaVersion>
+              <version>[${java.version}},)</version>
+              <message>You are running an older version of Java.</message>
+            </requireJavaVersion>
+            <requirePluginVersions>
+              <message>Good practice is to always define plugin versions!</message>
+            </requirePluginVersions>
+          </rules>
+        </configuration>
+      </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven-enforcer-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven-deploy-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-help-plugin</artifactId>
+          <version>${maven-help-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${maven-install-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${maven-site-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-wrapper-plugin</artifactId>
+          <version>${maven-wrapper-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${versions-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${docker-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 </project>

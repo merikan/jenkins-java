@@ -18,6 +18,7 @@ pipeline {
             }
         }
         stage('java8') {
+            // problem with agent in agent https://issues.jenkins.io/browse/JENKINS-63449
             agent {
               docker {
                 image 'eclipse-temurin:8-jdk'

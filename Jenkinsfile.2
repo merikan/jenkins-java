@@ -1,0 +1,119 @@
+#!/usr/bin/env groovy
+pipeline {
+  agent {
+    docker {
+      image 'eclipse-temurin:11-jdk'
+      args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
+      reuseNode true
+    }
+  }
+
+  options {
+    skipDefaultCheckout true
+  }
+  environment {
+    IS_SNAPSHOT = getMavenVersion().endsWith("-SNAPSHOT")
+    GIT_BRANCH_NAME = "main" //sh (script: 'git name-rev --name-only HEAD', returnStdout: true).trim().minus(~/^remotes\/origin\//)
+    TAGS_EXTRA = extraImageTags()
+  }
+  stages {
+    stage('Build') {
+      steps {
+        sh "./mvnw -B -Ddocker.tags.extra=${env.TAGS_EXTRA} clean package -DskipTests"
+        archiveArtifacts artifacts: '**/target/*.jar'
+        stash includes: '**/target/*.jar', name: 'jar'
+      }
+    }
+    stage('Unit test') {
+      steps {
+        unstash 'jar'
+        sh './mvnw -B test'
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: "**/surefire-reports/**/*.xml"
+        }
+      }
+    }
+    stage('Integration test') {
+      steps {
+        unstash 'jar'
+        sh './mvnw -B -Ddocker.skip verify'
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults:"**/failsafe-reports/**/*.xml"
+        }
+      }
+    }
+    stage('Static Analysis') {
+      steps {
+        echo "Done"
+      }
+    }
+    stage('Functional test') {
+      steps {
+        sh 'echo Functional test'
+      }
+    }
+    stage('Publish Maven Artifacts') {
+      when { anyOf { branch DEVELOP_BRANCH;  branch MAIN_BRANCH } }
+      steps {
+        unstash 'jar'
+        sh 'published maven artifacts'
+        // withCredentials([usernamePassword(credentialsId: "${env.MAVEN_REGISTRY_CREDENTIALS_ID}", usernameVariable: 'username', passwordVariable: 'password')]) {
+        //   sh("./mvnw validate jar:jar source:jar-no-fork deploy:deploy \
+        //             -s .mvn/settings.xml \
+        //             -Djgitver.pom-replacement-phase=validate \
+        //             -Dmaven.jar.forceCreation=false \
+        //             -Dmaven.test.skip=true \
+        //             -DNEXUS_USERNAME=${username} -DNEXUS_PASSWORD=${password}")
+        // }
+      }
+    }
+    stage('Docker Publish') {
+      steps {
+        sh 'published docker artifacts'
+        echo $env.TAGS_EXTRA
+        // withCredentials([usernamePassword(credentialsId: "${env.DOCKER_PUSH_REGISTRY_CREDENTIALS_ID}", usernameVariable: 'username', passwordVariable: 'password')]) {
+        //   sh ("./mvnw -Ddocker.push.username=${username} -Ddocker.push.password=${password} -Ddocker.push.registry=${env.DOCKER_PUSH_REGISTRY} -Ddocker.tags.extra=${TAGS_EXTRA} initialize docker:push")
+        // }
+      }
+    }
+  }
+  // post {
+  //   success {
+  //     notifySuccess()
+  //   }
+  //   failure {
+  //     notifyFailure()
+  //   }
+  // }
+}
+
+def getMavenVersion() {
+  def version = sh(script: "./mvnw org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\\['  | tail -1", returnStdout: true).trim()
+  println version
+  return version
+}
+
+def extraImageTags() {
+  return env.GIT_BRANCH_NAME ==~ /develop/ ? 'develop' : ''
+}
+
+//def notifySuccess() {
+//  try {
+//    slackSend (color: 'good', message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+//  } catch(err) {
+//    echo 'Sending slack message failed: ${err}'
+//  }
+//}
+//
+//def notifyFailure() {
+//  try {
+//    slackSend (color: 'danger', message: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+//  } catch(err) {
+//    echo 'Sending slack message faild: ${err}'
+//  }
+//}
+//}

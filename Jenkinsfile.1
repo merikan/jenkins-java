@@ -1,0 +1,48 @@
+pipeline {
+    agent {
+      docker {
+        image 'eclipse-temurin:11-jdk'
+      }
+    }
+
+    stages {
+        stage('no agent') {
+            steps {
+              sh(script: 'java -version', returnStdout: true)
+              // output: 
+              // + java -version
+              //   openjdk version "11.0.12" 2021-07-20
+            }
+        }
+        stage('java8') {
+            agent {
+              docker {
+                image 'eclipse-temurin:8-jdk'
+              }
+            }
+            steps {
+              sh(script: 'java -version', returnStdout: true)
+            }
+        }
+        stage('java11') {
+            agent {
+              docker {
+                image 'eclipse-temurin:11-jdk'
+              }
+            }
+            steps {
+              sh(script: 'java -version', returnStdout: true)
+            }
+        }
+        stage('java17') {
+            agent {
+              docker {
+                image 'eclipse-temurin:17-jdk'
+              }
+            }
+            steps {
+              sh(script: 'java -version', returnStdout: true)
+            }
+        }
+    }
+}

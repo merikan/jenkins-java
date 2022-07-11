@@ -15,5 +15,12 @@ pipeline {
         stash includes: '**/target/*.jar', name: 'jar'
       }
     }
+    stage('Build #2') {
+      steps {
+        sh "./mvnw -B -Ddocker.tags.extra=${env.TAGS_EXTRA} clean package -DskipTests"
+        archiveArtifacts artifacts: '**/target/*.jar'
+        stash includes: '**/target/*.jar', name: 'jar'
+      }
+    }
   }
 }

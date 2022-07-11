@@ -26,6 +26,13 @@ pipeline {
       }
     }
     stage('Integration test') {
+      agent {
+        docker {
+            reuseNode true
+            image 'openjdk:11.0-jdk-slim'
+            args  '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
         unstash 'jar'
         sh './mvnw -B -Ddocker.skip verify'

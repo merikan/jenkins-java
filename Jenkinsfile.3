@@ -1,8 +1,8 @@
 pipeline {
   agent {
     dockerfile {
-      args '-v $HOME/.m2:/root/.m2 -v $PWD:$PWD -w $PWD -v /var/run/docker.sock:/var/run/docker.sock'
       filename 'Dockerfile'
+      args '-v $HOME/.m2:/root/.m2'
     }
   }
   stages {
@@ -25,23 +25,23 @@ pipeline {
         stash includes: '**/target/*.jar', name: 'jar'
       }
     }
-    stage('Integration test') {
-      agent {
-        docker {
-            reuseNode true
-            image 'openjdk:11.0-jdk-slim'
-            args  '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-      }
-      steps {
-        unstash 'jar'
-        sh './mvnw -B -Ddocker.skip verify'
-      }
-      post {
-        always {
-          junit allowEmptyResults: true, testResults:"**/failsafe-reports/**/*.xml"
-        }
-      }
-    }
+//    stage('Integration test') {
+//      agent {
+//        docker {
+//            reuseNode true
+//            image 'openjdk:11.0-jdk-slim'
+//            args  '-v /var/run/docker.sock:/var/run/docker.sock'
+//        }
+//      }
+//      steps {
+//        unstash 'jar'
+//        sh './mvnw -B -Ddocker.skip verify'
+//      }
+//      post {
+//        always {
+//          junit allowEmptyResults: true, testResults:"**/failsafe-reports/**/*.xml"
+//        }
+//      }
+//    }
   }
 }

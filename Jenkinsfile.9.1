@@ -1,0 +1,23 @@
+#!/usr/bin/env groovy
+pipeline {
+  agent any
+  tools {
+    jdk '17'
+  }
+  environment {
+    BRANCH_NAME = "${GIT_BRANCH.split('/').size() > 1 ? GIT_BRANCH.split('/')[1..-1].join('/') : GIT_BRANCH}"
+    PROJECT_VERSION = sh (script: "./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+    IS_SNAPSHOT = """${PROJECT_VERSION}.endsWith("-SNAPSHOT")"""
+    TAGS_EXTRA = """BRANCH_NAME ==~ /develop/ ? 'develop' : ''"""
+    MAVEN_CONFIG = " -Dform-dist-repo.snapshots.url=${params.MAVEN_SNAPSHOTS_REPO}" +
+                   " -Dform-dist-repo.releases.url=${params.MAVEN_RELEASES_REPO}"
+  }
+
+  stages {
+    stage('echo') {
+      steps {
+        echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
+      }
+    }
+  }
+}

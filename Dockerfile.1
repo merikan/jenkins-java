@@ -1,0 +1,33 @@
+FROM eclipse-temurin:17-jre as builder
+WORKDIR /application
+COPY target/*.jar application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+
+FROM eclipse-temurin:17-jre
+
+VOLUME /tmp
+ENV user app
+ENV APP_HOME /usr/local/${user}
+ENV PATH $APP_HOME:$PATH
+
+WORKDIR ${APP_HOME}
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY --from=builder application/dependencies/ ./
+COPY --from=builder application/spring-boot-loader/ ./
+COPY --from=builder application/snapshot-dependencies/ ./
+COPY --from=builder application/application/ ./
+
+RUN useradd --user-group --shell /bin/false ${user} && \
+    chmod +x /docker-entrypoint.sh && \
+    chown -R ${user}:${user} ${APP_HOME} && \
+    chgrp -R 0 ${APP_HOME} && \
+    chmod -R g=u ${APP_HOME}
+
+USER ${user}
+ENV JAVA_OPTS=""
+ENV LANG=C.UTF-8
+
+EXPOSE 8080 8081
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -1,0 +1,18 @@
+#!/usr/bin/env groovy
+
+// relocate dockerfile for top-agent
+pipeline {
+  agent {
+    dockerfile {
+      filename 'Dockerfile'
+    }
+  }
+  stages {
+    stage('use top-agent') {
+      steps {
+        sh(script: 'java -version', returnStdout: true)
+        sh 'printenv | sort'
+      }
+    }
+  }
+}

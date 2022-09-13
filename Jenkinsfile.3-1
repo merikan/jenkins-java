@@ -1,0 +1,29 @@
+pipeline {
+  agent {
+    dockerfile {
+      filename 'Dockerfile'
+      args '-v $HOME/.m2:/root/.m2'
+    }
+  }
+  stages {
+    stage('no agent') {
+      steps {
+        sh(script: 'java -version', returnStdout: true)
+      }
+    }
+    stage('Build') {
+      steps {
+        sh "./mvnw -B -Ddocker.tags.extra=${env.TAGS_EXTRA} clean package -DskipTests"
+        archiveArtifacts artifacts: '**/target/*.jar'
+        stash includes: '**/target/*.jar', name: 'jar'
+      }
+    }
+    stage('Build #2') {
+      steps {
+        sh "./mvnw -B -Ddocker.tags.extra=${env.TAGS_EXTRA} clean package -DskipTests"
+        archiveArtifacts artifacts: '**/target/*.jar'
+        stash includes: '**/target/*.jar', name: 'jar'
+      }
+    }
+  }
+}

@@ -8,8 +8,8 @@
     <version>2.7.1</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>com.merikan.testcontainers</groupId>
-  <artifactId>todo-faster</artifactId>
+  <groupId>com.merikan.jenkins-java</groupId>
+  <artifactId>todo</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>Testcontainers with Spring Boot and Junit 5</description>
@@ -189,6 +189,26 @@
           </rules>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <!-- <configuration> -->
+        <!--   <fork>true</fork> -->
+        <!--   <skip>false</skip> -->
+        <!--   <profiles> -->
+        <!--     <profile>local</profile> -->
+        <!--   </profiles> -->
+        <!-- </configuration> -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+              <!-- <goal>build-info</goal> -->
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
     <pluginManagement>
       <plugins>

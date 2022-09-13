@@ -12,6 +12,7 @@ pipeline {
     skipDefaultCheckout true
   }
   environment {
+    BRANCH_NAME = "${GIT_BRANCH.split('/').size() > 1 ? GIT_BRANCH.split('/')[1..-1].join('/') : GIT_BRANCH}"
     IS_SNAPSHOT = getMavenVersion().endsWith("-SNAPSHOT")
     GIT_BRANCH_NAME = "main" //sh (script: 'git name-rev --name-only HEAD', returnStdout: true).trim().minus(~/^remotes\/origin\//)
     TAGS_EXTRA = extraImageTags()
